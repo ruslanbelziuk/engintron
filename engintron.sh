@@ -14,7 +14,7 @@ APP_PATH="/usr/local/src/engintron"
 APP_VERSION="1.8.7"
 
 CPANEL_PLG_PATH="/usr/local/cpanel/whostmgr/docroot/cgi"
-REPO_CDN_URL="https://cdn.rawgit.com/engintron/engintron/master"
+REPO_CDN_URL="https://cdn.rawgit.com/ruslanbelziuk/engintron/master"
 
 GET_HTTPD_VERSION=$(httpd -v | grep "Server version")
 GET_CENTOS_VERSION=$(rpm -q --qf "%{VERSION}" $(rpm -q --whatprovides redhat-release))
@@ -622,7 +622,7 @@ install)
 
         # Get the files
         cd $APP_PATH
-        wget --no-check-certificate -O engintron.zip https://github.com/engintron/engintron/archive/master.zip
+        wget --no-check-certificate -O engintron.zip https://github.com/ruslanbelziuk/engintron/archive/master.zip
         unzip engintron.zip
         /bin/cp -rf $APP_PATH/engintron-master/* $APP_PATH/
         /bin/rm -rvf $APP_PATH/engintron-master/*

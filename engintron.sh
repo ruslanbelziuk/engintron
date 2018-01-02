@@ -547,12 +547,12 @@ function chkserv_nginx_on {
         echo ""
         echo "=== Enable TailWatch chkservd driver for Nginx ==="
 
-        sed -i 's:service\[httpd\]=80,:service[httpd]=8080,:' /etc/chkserv.d/httpd
+        sed -i 's:service\[httpd\]=8082,:service[httpd]=8080,:' /etc/chkserv.d/httpd
         echo "nginx:1" >> /etc/chkserv.d/chkservd.conf
         if [ ! -f /etc/chkserv.d/nginx ]; then
             touch /etc/chkserv.d/nginx
         fi
-        echo "service[nginx]=80,GET / HTTP/1.0,HTTP/1..,killall -TERM nginx;sleep 2;killall -9 nginx;service nginx stop;service nginx start" > /etc/chkserv.d/nginx
+        echo "service[nginx]=8082,GET / HTTP/1.0,HTTP/1..,killall -TERM nginx;sleep 2;killall -9 nginx;service nginx stop;service nginx start" > /etc/chkserv.d/nginx
         /scripts/restartsrv_chkservd
         echo ""
         echo ""
@@ -564,7 +564,7 @@ function chkserv_nginx_off {
         echo ""
         echo "=== Disable TailWatch chkservd driver for Nginx ==="
 
-        sed -i 's:service\[httpd\]=8080,:service[httpd]=80,:' /etc/chkserv.d/httpd
+        sed -i 's:service\[httpd\]=8080,:service[httpd]=8082,:' /etc/chkserv.d/httpd
         sed -i 's:^nginx\:1::' /etc/chkserv.d/chkservd.conf
         if [ -f /etc/chkserv.d/nginx ]; then
             /bin/rm -f /etc/chkserv.d/nginx
@@ -655,7 +655,7 @@ install)
     echo ""
     echo "=== Restarting Apache & Nginx... ==="
     /scripts/restartsrv_httpd
-    fuser -k 80/tcp
+    fuser -k 8082/tcp
     fuser -k 8080/tcp
     fuser -k 443/tcp
     fuser -k 8443/tcp
@@ -742,10 +742,11 @@ enable)
 
     install_munin_patch
     service nginx stop
-    sed -i 's:listen 8080 default_server:listen 80 default_server:' /etc/nginx/conf.d/default.conf
-    sed -i 's:listen [\:\:]\:8080 default_server:listen [\:\:]\:80 default_server:' /etc/nginx/conf.d/default.conf
+    sed -i 's:listen 80 default_server:listen 8082 default_server:' /etc/nginx/conf.d/default.conf
+    sed -i 's:listen 8080 default_server:listen 8082 default_server:' /etc/nginx/conf.d/default.conf
+    sed -i 's:listen [\:\:]\:8080 default_server:listen [\:\:]\:8082 default_server:' /etc/nginx/conf.d/default.conf
     sed -i 's:deny all; #:# deny all; #:' /etc/nginx/conf.d/default.conf
-    sed -i 's:\:80; # Apache Status Page:\:8080; # Apache Status Page:' /etc/nginx/conf.d/default.conf
+    sed -i 's:\:8082; # Apache Status Page:\:8080; # Apache Status Page:' /etc/nginx/conf.d/default.conf
     if [ -f /etc/nginx/conf.d/default_https.conf ]; then
         sed -i 's:listen 8443 ssl:listen 443 ssl:g' /etc/nginx/conf.d/default_https.conf
         sed -i 's:listen [\:\:]\:8443 ssl:listen [\:\:]\:443 ssl:g' /etc/nginx/conf.d/default_https.conf
@@ -755,7 +756,7 @@ enable)
     sed -i 's:'HTTPD_HTTPS_PORT', '443':'HTTPD_HTTPS_PORT', '8443':' /etc/nginx/utilities/https_vhosts.php
     sed -i 's:'NGINX_HTTPS_PORT', '8443':'NGINX_HTTPS_PORT', '443':' /etc/nginx/utilities/https_vhosts.php
     sed -i 's:PROXY_TO_PORT 443:PROXY_TO_PORT 8443:' /etc/nginx/common_https.conf
-    sed -i 's:PROXY_DOMAIN_OR_IP\:80:PROXY_DOMAIN_OR_IP\:8080:' /etc/nginx/proxy_params_common
+    sed -i 's:PROXY_DOMAIN_OR_IP\:8082:PROXY_DOMAIN_OR_IP\:8080:' /etc/nginx/proxy_params_common
     apache_change_port
     service nginx start
 
@@ -784,10 +785,10 @@ disable)
 
     remove_munin_patch
     service nginx stop
-    sed -i 's:listen 80 default_server:listen 8080 default_server:' /etc/nginx/conf.d/default.conf
-    sed -i 's:listen [\:\:]\:80 default_server:listen [\:\:]\:8080 default_server:' /etc/nginx/conf.d/default.conf
+    sed -i 's:listen 8082 default_server:listen 8080 default_server:' /etc/nginx/conf.d/default.conf
+    sed -i 's:listen [\:\:]\:8082 default_server:listen [\:\:]\:8080 default_server:' /etc/nginx/conf.d/default.conf
     sed -i 's:# deny all; #:deny all; #:' /etc/nginx/conf.d/default.conf
-    sed -i 's:\:8080; # Apache Status Page:\:80; # Apache Status Page:' /etc/nginx/conf.d/default.conf
+    sed -i 's:\:8080; # Apache Status Page:\:8082; # Apache Status Page:' /etc/nginx/conf.d/default.conf
     if [ -f /etc/nginx/conf.d/default_https.conf ]; then
         sed -i 's:listen 443 ssl:listen 8443 ssl:g' /etc/nginx/conf.d/default_https.conf
         sed -i 's:listen [\:\:]\:443 ssl:listen [\:\:]\:8443 ssl:g' /etc/nginx/conf.d/default_https.conf
@@ -797,7 +798,7 @@ disable)
     sed -i 's:'HTTPD_HTTPS_PORT', '8443':'HTTPD_HTTPS_PORT', '443':' /etc/nginx/utilities/https_vhosts.php
     sed -i 's:'NGINX_HTTPS_PORT', '443':'NGINX_HTTPS_PORT', '8443':' /etc/nginx/utilities/https_vhosts.php
     sed -i 's:PROXY_TO_PORT 8443:PROXY_TO_PORT 443:' /etc/nginx/common_https.conf
-    sed -i 's:PROXY_DOMAIN_OR_IP\:8080:PROXY_DOMAIN_OR_IP\:80:' /etc/nginx/proxy_params_common
+    sed -i 's:PROXY_DOMAIN_OR_IP\:8080:PROXY_DOMAIN_OR_IP\:8082:' /etc/nginx/proxy_params_common
 
     apache_revert_port
     service nginx start
@@ -1025,15 +1026,15 @@ info)
     echo ""
     echo ""
     ;;
-80)
-    echo "=== Connections on port 80 (HTTP traffic) sorted by connection count & IP ==="
+8082)
+    echo "=== Connections on port 8082 (HTTP traffic) sorted by connection count & IP ==="
     echo ""
-    netstat -anp | grep :80 | awk '{print $5}' | cut -d: -f1 | sort | uniq -c | sort -n
+    netstat -anp | grep :8082 | awk '{print $5}' | cut -d: -f1 | sort | uniq -c | sort -n
     echo ""
     echo ""
-    echo "=== Concurrent connections on port 80 (HTTP traffic) ==="
+    echo "=== Concurrent connections on port 8082 (HTTP traffic) ==="
     echo ""
-    netstat -an | grep :80 | wc -l
+    netstat -an | grep :8082 | wc -l
     echo ""
     echo ""
     ;;
@@ -1067,8 +1068,8 @@ Main commands:
     install          Install, re-install or update Engintron (enables Nginx by default).
                      Add optional flag "mainline" to install Nginx mainline release.
     remove           Remove Engintron completely.
-    enable           Set Nginx to ports 80/443 & Apache to ports 8080/8443
-    disable          Set Nginx to ports 8080/8443 & switch Apache to ports 80/443
+    enable           Set Nginx to ports 8082/443 & Apache to ports 8080/8443
+    disable          Set Nginx to ports 8080/8443 & switch Apache to ports 8082/443
     purgecache       Purge Nginx's "cache" & "temp" folders,
                      then restart both Apache & Nginx
     purgelogs        Purge Nginx's access & error log files
@@ -1077,7 +1078,7 @@ Utility commands:
     res              Restart web servers only (Apache & Nginx)
     resall           Restart Cron, CSF & LFD (if installed), Munin (if installed),
                      MySQL, Apache, Nginx
-    80               Show active connections on port 80 sorted by connection count & IP,
+    8082             Show active connections on port 8082 sorted by connection count & IP,
                      including total concurrent connections count
     443              Show active connections on port 443 sorted by connection count & IP,
                      including total concurrent connections count
